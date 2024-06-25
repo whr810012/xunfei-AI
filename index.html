@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>蛋蛋AI</title>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.0.0/crypto-js.min.js"></script>
+  <link rel="stylesheet" href="https://at.alicdn.com/t/c/font_3736758_vxpb728fcyh.css">
+  <!-- 初始化样式 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reset.css@2.0.2/reset.min.css">
+  <!-- 公共 -->
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .container {
+      width: 100%;
+      height: 100%;
+      background-color: #f5f4f4;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+  </style>
+  <!-- 头部 -->
+  <!-- <style>
+    .top {
+      width: 100%;
+      height: 1000px;
+      padding: 15px 7px 12px 21px;
+      background-color: #f5f4f4;
+      display: flex;
+      justify-content: space-between;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+  </style> -->
+  <!-- 好友名字 -->
+  <style>
+    .friend_name {
+      width: 100%;
+      height: 100px;
+      background-color: #eae9e9;
+      text-align: center;
+      position: fixed;
+      left: 0;
+      border-bottom: 1px solid #e5e5e5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .friend_name_text {
+      position: relative;
+      font-size: 50px;
+      -webkit-text-stroke:2px #000000;        /*文字描边*/
+		   -webkit-text-fill-color:transparent;    /*设置文字的填充颜色*/
+      /* margin-top: 10px; */
+    }
+  </style>
+  <!-- 聊天区域 -->
+  <style>
+    .chat {
+      width: 100%;
+      /* 顶部留出88px的2个头部导航的高度 */
+      /* 底部留出89px内边距让出固定在底部的对话框-防止遮挡 */
+      /* 再多留出10px, 最后一条消息距离底部 */
+      padding-top: 100px;
+      padding-bottom: 300px;
+      flex: 1;
+      overflow-y: scroll;
+    }
+
+    /* 隐藏滚动条 */
+    .chat::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chat ul {
+      padding-top: 20px;
+    }
+
+    .chat img {
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+
+    }
+
+    .chat li {
+      display: flex;
+      align-items: top;
+    }
+
+    .chat li~li {
+      /* 除了第一个li, 选择所有的兄弟li标签 */
+      margin-top: 20px;
+    }
+
+    .chat .right {
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .right{
+      margin-right: 5px;
+    }
+
+    .left{
+      margin-left: 5px;
+    }
+
+    .left span {
+      font-size: 45px;
+      font-weight: 500;
+      margin-left: 10px;
+      border-radius: 1px 10px 1px 10px;
+      display: inline-block;
+      padding: 12px 16px;
+      background-image: linear-gradient(180deg, #B1E393 0%, #50D287 100%);
+      box-shadow: 2px 2px 10px 0px rgba(201, 201, 201, 0.1);
+      color: #FFFFFF;
+      max-width: 80%;
+
+    }
+
+    .right span {
+      font-size: 45px;
+      font-weight: 500;
+      margin-right: 10px;
+      border-radius: 1px 10px 1px 10px;
+      display: inline-block;
+      padding: 12px 16px;
+      background: #FFFFFF;
+      border: 1px solid rgba(247, 247, 247, 1);
+      color: #000000;
+      max-width: 80%;
+    }
+  </style>
+  <!-- 底部区域(发送消息) -->
+  <style>
+    .bottom_div {
+      width: 100%;
+      height: 200px;
+      position: fixed;
+      left: 0;
+      bottom: 0;
+      background: #FFFFFF;
+      box-shadow: 0px -5px 7px 0px rgba(168, 168, 168, 0.05);
+      border-radius: 25px 25px 0px 0px;
+      padding: 15px 15px 0px 15px;
+    }
+
+    /* 外框盒子 */
+    .send_box {
+      display: flex;
+    }
+
+    .send_box img {
+      width: 100px;
+      height: 100px;
+      background-color: #fff;
+    }
+
+
+
+    /* 输入框背景 */
+    .input_bg {
+      height: 100px;
+      background: #f3f3f3;
+      border-radius: 50px;
+      padding-left: 17px;
+      flex: 1;
+      margin-right: 15px;
+      /* 让input宽度高度 */
+      display: flex;
+    }
+
+    .input_bg input {
+      border: 0;
+      outline: 0;
+      background-color: transparent;
+      display: inline-block;
+      width: 100%;
+      font-size: 2rem;
+    }
+
+
+
+    /* 修改输入框默认占位文字
+          webkit内核, firefox18-, firfox19+, 其他
+          */
+    .input_bg input::-webkit-input-placeholder,
+    .input_bg input:-moz-placeholder,
+    .input_bg input::-moz-placeholder,
+    .input_bg input:-ms-input-placeholder {
+      font-family: PingFangSC-Regular;
+      font-size: 26px;
+      color: #C7C7C7;
+      letter-spacing: 
+      0;
+      font-weight: 400;
+    }
+
+    /* 底部黑色小条 */
+    .black_border {
+      margin-top: 10px;
+      height: 34px;
+      text-align: center;
+    }
+
+    .black_border span {
+      display: inline-block;
+      background-color: #000;
+      width: 105px;
+      height: 4px;
+      border-radius: 50px;
+    }
+  </style>
+  <!-- PC端单独适配成移动大小 -->
+  <style>
+    /* PC端居中显示手机 */
+    @media screen and (min-width: 1200px) {
+      .container {
+        width: 375rpx;
+        margin: 0 auto;
+        border: 1px solid black;
+        /* 让fixed固定定位标签参照当前标签 */
+        transform: translate(0px);
+      }
+    }
+  </style>
+</head>
+
+
+
+<body>
+
+  <div class="container">
+    <div class="friend_name">
+      <span class="friend_name_text">蛋蛋AI问答</span>
+    </div>
+    <div class="chat">
+      <ul class="chat_list" id="chat-history">
+        <!-- 他的消息 -->
+      </ul>
+    </div>
+    <!-- 底部固定 -->
+    <div class="bottom_div">
+      <!-- 发送消息 -->
+      <div class="send_box">
+        <div class="input_bg">
+          <!-- 回车事件 -->
+
+          <input class="chat_input" id="user-input" type="text" placeholder="请输入您的问题">
+        </div>
+        <img class="send_img"  src="https://bpic.51yuansu.com/pic3/cover/02/43/08/59e4b9ec20619_610.jpg" alt="" onclick="sendQuestion()">
+      </div>
+      <!-- 底部黑条 -->
+      <!-- <div class="black_border">
+        <span></span>
+      </div> -->
+    </div>
+
+  </div>
+
+  <script>
+    let chatDiv = document.querySelector('.chat')
+    let socket = null; // 声明全局变量保存 WebSocket 对象
+    let aiResponse = []; // 声明一个数组保存 AI 的回答
+
+    function generateURL() {
+      // 生成签名所需的参数
+      const APIKey = '1398f259b3fec19a20e02d86aadb86eb';
+      const APISecret = 'MDMxYjIzZWI1ZTdlZDE4NTllOTRhYTVk';
+      const host = 'spark-api.xf-yun.com';
+      const path = '/v3.1/chat';
+
+      // 生成date参数
+      const curTime = new Date().toUTCString();
+      const date = curTime;
+
+      // 生成authorization参数
+      const requestLine = `GET ${path} HTTP/1.1`;
+      const tmp = `host: ${host}\ndate: ${date}\n${requestLine}`;
+      const tmpSha = CryptoJS.HmacSHA256(tmp, APISecret);
+      const signature = CryptoJS.enc.Base64.stringify(tmpSha);
+      const authorizationOrigin = `api_key="${APIKey}", algorithm="hmac-sha256", headers="host date request-line", signature="${signature}"`;
+      const authorization = btoa(authorizationOrigin);
+
+      // 生成最终url
+      const params = {
+        authorization: encodeURIComponent(authorization),
+        date: encodeURIComponent(date),
+        host: encodeURIComponent(host)
+      };
+      const url = `wss://${host}${path}?authorization=${params.authorization}&date=${params.date}&host=${params.host}`;
+
+      return url;
+    }
+
+    function connectWebSocket() {
+      const url = generateURL();
+      socket = new WebSocket(url);
+
+      socket.onopen = function (event) {
+        console.log("连接成功");
+      };
+
+      socket.onmessage = function (event) {
+        const response = JSON.parse(event.data);
+        if (response.payload && response.payload.choices && response.payload.choices.text && response.payload.choices.text.length > 0) {
+          const text = response.payload.choices.text[0].content;
+          aiResponse.push(text);
+        } else {
+          console.error("服务器返回的数据格式不正确");
+          console.log(response);
+        }
+      };
+
+      socket.onclose = function (event) {
+        console.log("连接关闭");
+
+        // 在连接关闭后重新连接 WebSocket
+        console.log("正在尝试重新连接...");
+        connectWebSocket();
+
+        // 在连接关闭后将所有的 AI 回答拼接成一个字符串返回给用户
+        const aiResponseText = aiResponse.join(""); // 将回答数组拼接成一句话
+        const chatHistory = document.getElementById("chat-history");
+
+        if (aiResponseText === '') {
+          return;
+        } else {
+          chatHistory.innerHTML += `<li class="left">
+          <img src="https://ts1.cn.mm.bing.net/th/id/R-C.393aa3396d88fb5d66838dca8b4ab9c3?rik=uLcvX%2bvxKGJJTg&riu=http%3a%2f%2fwww.kuaipng.com%2fUploads%2fpic%2fw%2f2023%2f02-11%2f135431%2fwater_135431_698_698_.png&ehk=bkQgHkRRDhT6lra7svQFNh7071BSPlQEwwbhXgRE5mQ%3d&risl=&pid=ImgRaw&r=0" alt="">
+          <span>${aiResponseText}</span>
+        </li>`
+
+        }
+
+
+
+        aiResponse = []; // 清空回答数组
+        chatDiv.scrollTop = chatDiv.scrollHeight
+
+
+      };
+    }
+
+    // 初始化连接
+    connectWebSocket();
+
+    // 发送问题
+    function sendQuestion() {
+      const userInput = document.getElementById("user-input").value;
+
+      // 将用户的问题添加到聊天历史中
+
+      const chatHistory = document.getElementById("chat-history");
+      if(userInput == ''){
+        return
+      }else{
+              chatHistory.innerHTML += `<li class="right">
+          <span>${userInput}</span>
+          <img src="https://tse2-mm.cn.bing.net/th/id/OIP-C.BQoqXfiYUKT7RJ1JLU5RbAHaJK?rs=1&pid=ImgDetMain" alt="">
+        </li>`
+
+        chatDiv.scrollTop = chatDiv.scrollHeight
+      }
+
+
+
+      // 检查 WebSocket 连接状态，如果已经关闭，就重新连接
+      if (socket.readyState !== WebSocket.OPEN) {
+        console.log("WebSocket 连接已关闭，正在尝试重新连接...");
+        connectWebSocket();
+      }
+
+      // 发送问题给服务器
+      socket.send(JSON.stringify({
+        header: {
+          app_id: "86a192cf"
+        },
+        parameter: {
+          chat: {
+            domain: "generalv3",
+            temperature: 0.5,
+            max_tokens: 2048,
+          }
+        },
+        payload: {
+          message: {
+            text: [
+              { role: "user", content: userInput }
+            ]
+          }
+        }
+      }));
+
+      // 清空输入框
+      document.getElementById("user-input").value = "";
+    }
+
+    document.querySelector('.chat_input').addEventListener('keyup', e => {
+      if (e.keyCode === 13) {
+        sendQuestion()
+      }
+    })
+
+  </script>
+</body>
+
+</html>
