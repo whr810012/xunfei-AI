@@ -305,12 +305,18 @@
         host: encodeURIComponent(host)
       };
       const url = `wss://${host}${path}?authorization=${params.authorization}&date=${params.date}&host=${params.host}`;
-
+      // 将url本地存储
+      localStorage.setItem('aiUrl', url);
       return url;
     }
 
     function connectWebSocket() {
-      const url = generateURL();
+      // 从本地存储中获取url
+      const url = localStorage.getItem('aiUrl') || ''
+      if (!url){
+        url = generateURL();
+      }
+      // const url = generateURL();
       socket = new WebSocket(url);
 
       socket.onopen = function (event) {
