@@ -313,11 +313,13 @@
     function connectWebSocket() {
       // 从本地存储中获取url
       const url = localStorage.getItem('aiUrl') || ''
-      if (!url){
+      if (!url) {
         url = generateURL();
       }
+      if (!socket) {
+        socket = new WebSocket(url);
+      }
       // const url = generateURL();
-      socket = new WebSocket(url);
 
       socket.onopen = function (event) {
         console.log("连接成功");
